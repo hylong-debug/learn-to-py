@@ -1,0 +1,364 @@
+# 基础
+## Excel基础
+### 创建、保存、关闭
+参数visible用于设置Excel程序窗口的可见性，
+如果为True，表示显示Excel程序窗口，
+如果为False，表示隐藏Excel程序窗口；
+
+参数add_book用于设置启动Excel程序窗口后是否新建工作簿，
+如果为True，表示新建一个工作簿，
+如果为False，表示不新建工作簿。
+```python
+##创建20个“分公司i"的Excel并保存
+import xlwings as xw
+app = xw.App( visible = True,add_book = False)
+for i in range(1,21):
+    workbook = app.books.add()
+    workbook.save(f'g:\\example\\01\\员工\\分公司{i}.xlsx')
+    #f也可用r,r用来取消路径中反斜杠“\”的转义功能
+    
+    workbook.close()
+    #close()函数用于关闭创建的工作簿
+    
+app.quit()
+#quit()函数用于退出Excel程序
+
+```
+### 打开、操控工作表和单元格
+
+```python
+import xlwings as xw
+app = xw.App(visible = True, add_book = False)
+workbook = app.books.open(r'g:\\example\\01\\员工\\分公司1.xlsx')#打开。这行不用缩进
+
+#输入内容
+worksheet = workbook.sheets['sheet1']#选中sheet
+worksheet.range('A1:C99'). value='你是编号'#单元格A1到C99输入内容
+
+#新建sheet
+worksheet = workbook.sheets.add('产品统计表’）
+	
+	
+```
+### 创建并写入数据
+
+```python
+import xlwings as xw
+import pandas as pd
+app = xw.App(visible=False)
+workbook = app.books.add()
+worksheet =workbook.sheets.add('工作表1')
+df = pd.DataFrame([[1,100],[2,85],[3,93]],
+                  columns=['MARY','TOM'])
+worksheet.range('A1'). value=df
+workbook.save(r'g:\example\table.xlsx')
+workbook.close()
+app.quit()
+
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302015058642.png)
+### 创建并画入图
+
+```python
+import xlwings as xw
+import pandas as pd
+import matplotlib.pyplot as plt
+
+figure=plt.figure()
+x=[1,3,5,6,8]
+y=[3,-22,5,7,66]
+plt.plot(x,y)
+
+app = xw.App(visible=False)
+workbook = app.books.add()
+worksheet =workbook.sheets.add('工作表1')
+
+worksheet.pictures.add(figure,name='图1',update=True,left=200)
+workbook.save(r'g:\example\table2.xlsx')
+workbook.close()
+app.quit()
+
+```
+·left用于设置图表与左侧边界的距离，这里设置left为100，表示让图表距离左侧边界100像素，
+同理可以设置参数top为400，表示让图表距离顶部边界400像素
+## *NumPy-Numerical Python数组计算
+数学模块，主要用于数组计算。
+### 列表变数组
+
+```python
+import numpy as np
+a=[1,2,3,4]
+b=np.array(a)
+print(b)
+```
+得到[1 2 3 4]
+
+### 创建数组
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301224302550.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+### 创建随机数组
+#### 一维
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301224634559.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+#### 二维
+##### 不随机
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301224658269.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+##### 随机
+
+```python
+import numpy as np
+y = np.random.randint(5,10,(2,5))
+print(y)
+#起始数5（含），终止数10（不含），2行5列
+```
+结果
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301231724837.png)
+
+
+### 数组的好处：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301222825524.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2021030122290174.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+## *pandas-数据导入和整理
+数据快速分析、数据清洗和准备等工作，
+名字来源于“panel data”（面板数据）
+Python版的Excel
+擅长处理二维数据，其主要有Series和DataFrame两种数据结构。
+### Series
+类似于通过NumPy模块创建的一维数组，
+不同的是Series对象不仅包含数值，还包含一组索引，演示代码如下：
+
+```python
+import pandas as pd
+y = pd.Series(['一乙','二甲','三斌'])
+print(y)
+
+```
+结果
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301233126203.png)
+
+
+### DataFrame二维数据表格
+#### 创建
+##### 通过列表
+
+```python
+import pandas as pd
+y = pd.DataFrame([[1,2],[3,4],[5,6]])
+print(y)
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301233315772.png)
+——————————————————————————————————
+——————————————————————————————
+ 自定义行和列名字：
+1.自己想清楚行和列元素
+```python
+import pandas as pd
+y = pd.DataFrame([[1,2],[3,4],[5,6]],
+                 columns =['date','score'],
+                 index=['a','b','c'])
+print(y)
+
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301233638256.png)
+———————————————————————————————————
+2.按行按列
+
+```python
+import pandas as pd
+y = pd.DataFrame()
+date=[1.1,1.2,1.3]
+score=[2,4,6]
+y['日期']= date
+y['分数']= score
+print(y)
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302000550195.png)
+——————————————————————————————————
+——————————————————————————————————
+##### 通过字典
+1、列索引是字典的键名
+```python
+import pandas as pd
+y = pd.DataFrame({'第一门':[99,98,93],
+                  '第二门':[77,65,93]},
+                  index = ['Mary','Tom','Queen'])
+print(y)
+
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302001337242.png)
+——————————————————————————————————
+2、行索引是字典的键名（此时列索引只有编号
+
+```python
+import pandas as pd
+y = pd.DataFrame.from_dict({'第一门':[99,98,93],
+                  '第二门':[77,65,93]},
+                  orient = 'index' )
+print(y)
+
+```
+参数orient用于指定以字典的键名作为列索引还是行索引，
+默认值为'columns'，即以字典的键名作为列索引，
+如果设置成'index'，则表示以字典的键名作为行索引
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302001945259.png)
+——————————————————————————————————
+————————————————————————————————
+##### 通过二维数组
+1.随机
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302002100542.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+————————————————————————————————
+2、指定
+
+```python
+import pandas as pd
+y = pd.DataFrame([[1,10],[2,9],[3,10]],
+                 columns = ['日期','分数']
+                 ,index = ['万科','融创','碧桂园'])
+y.index.name='公司'
+print(y)
+
+```
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2021030200314398.png)
+——————————————————————————————————
+3、改行标签
+
+```python
+import pandas as pd
+y = pd.DataFrame([[1,10],[2,9],[3,10]],
+                 columns = ['日期','分数']
+                 ,index = ['万科','融创','碧桂园'])
+y.index.name='公司'
+
+#添加下面2行
+
+y = y.reset_index() #把公司列变成普通一列
+y = y.set_index('日期') #把日期变成行标签
+print(y)
+
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302003635738.png)
+## *Matplotlib数据可视化
+### 折线图
+
+```python
+import matplotlib.pyplot as plt
+x=[1,2,3,4,5]
+y=[1,4,9,16,25]
+plt.plot(x,y)
+plt.show()
+```
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302014141105.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+### 柱状图
+
+```python
+import matplotlib.pyplot as plt
+x=[1,2,3,4,5]
+y=[1,4,9,16,25]
+plt.bar(x,y) #只有此处改成bar
+plt.show()
+```
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210302014251964.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80Mzc3NjY1OQ==,size_16,color_FFFFFF,t_70)
+
+
+
+# 批量 
+## 批量新建空白Excel
+### 按数字
+idle
+参数visible用于设置Excel程序窗口的可见性，
+如果为True，表示显示Excel程序窗口，
+如果为False，表示隐藏Excel程序窗口；
+
+参数add_book用于设置启动Excel程序窗口后是否新建工作簿，
+如果为True，表示新建一个工作簿，
+如果为False，表示不新建工作簿。
+
+```python
+##创建20个“分公司i"的Excel
+import xlwings as xw
+app = xw.App( visible = True,add_book = False) #启动Excel程序但不新建工作簿
+
+for i in range(1,21):
+    workbook = app.books.add()
+
+#保存
+    workbook.save(f'g:\\example\\01\\员工\\分公司{i}.xlsx')
+    #f也可用r,r用来取消路径中反斜杠“\”的转义功能
+#关闭
+    workbook.close()
+#退出
+app.quit()
+
+```
+
+### 按给定列表
+## 批量打开文件夹下一级文件
+
+```python
+import xlwings as xw
+import os
+
+file_path='g:\example'
+file_list=os.listdir(file_path) #列出一级子文件和文件夹名称
+
+app=xw.App(visible=True, add_book=False) #启动Excel
+
+for i in file_list:
+    if os.path.splitext(i)[1]=='.xlsx':
+        app.books.open(file_path+'\\'+i)
+        #判断扩展名是xlsx就打开
+
+
+```
+
+## 查看所有文件和子文件夹的名称（只能查看一级）
+
+```python
+import os
+path = 'g:\\example\\01\\员工'
+file_list = os.listdir(path)
+print(file_list)
+
+```
+结果如图![在这里插入图片描述](https://img-blog.csdnimg.cn/20210301214751788.png)
+## 批量重命名sheet
+
+```python
+import xlwings as xw
+
+app=xw.App(visible=True, add_book=False)
+
+workbook=app.books.open(r'g:\example\table2.xlsx')
+worksheets=workbook.sheets #获取所有sheet
+
+for i in range(len(worksheets)): #遍历sheet len是获取长度 range是从0开始选
+    worksheets[i].name=worksheets[i].name.replace('线上','线下') #把所有“线上”改成“线下”
+
+    workbook.save()
+    app.quit()
+
+```
+这个代码只改了第一个sheet，不知道为啥
+## 批量重命名book
+
+```python
+import os
+
+file_path=r'g:\example'
+file_list=os.listdir(file_path) #列出所有子文件名称
+
+old_book_name='table'#要替换掉table
+new_book_name='book'#新
+
+for i in file_list:
+    if i.startswith('~$'):#是否有临时文件
+        continue#有就跳过
+    new_file=i.replace(old_book_name,new_book_name)
+    olf_file_path=os.path.join(file_path,i)#拼接成新的完整路径
+    new_file_path=os.path.join(file_path,new_file)
+
+    os.rename(olf_file_path,new_file_path)#执行重命名
+
+
+```
+不能有子文件夹，否则跑不起来
